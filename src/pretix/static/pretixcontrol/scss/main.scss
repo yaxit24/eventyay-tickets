@@ -33,10 +33,29 @@ footer {
 nav.navbar {
     margin: 0;
 }
+
 .navbar-brand img {
-    height: 100%;
-    width: auto;
-    display: inline;
+    height: 30px !important;
+    width: auto !important;
+    margin-right: 8px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+.navbar-brand {
+    font-weight: 400 !important;
+    font-size: 20px !important;
+    font-family: 'Roboto', sans-serif !important;
+    display: flex !important;
+    align-items: center !important;
+    line-height: 30px !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    
+    &:hover, &:focus {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
 }
 
 #side-menu img.fa-img {
