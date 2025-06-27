@@ -425,6 +425,15 @@ var editor = {
                 } else {
                     $("#toolbox-content-other").val("");
                 }
+                
+                // Update duplicate dropdown to match the original
+                $("#toolbox-content-duplicate").val(o.content);
+                $("#toolbox-content-duplicate-other").toggle($("#toolbox-content-duplicate").val() === "other");
+                if (o.content === "other") {
+                    $("#toolbox-content-duplicate-other").val(o.text);
+                } else {
+                    $("#toolbox-content-duplicate-other").val("");
+                }
             }
         }
     },
@@ -492,12 +501,36 @@ var editor = {
             o.setWidth(editor._mm2px($("#toolbox-textwidth").val()));
             o.downward = $("#toolbox").find("button[data-action=downward]").is('.active');
             o.rotate(parseFloat($("#toolbox-textrotation").val()));
-            $("#toolbox-content-other").toggle($("#toolbox-content").val() === "other");
-            o.content = $("#toolbox-content").val();
-            if ($("#toolbox-content").val() === "other") {
-                o.set('text', $("#toolbox-content-other").val());
+            
+            // Handle both original and duplicate dropdowns
+            var contentValue;
+            if ($("#toolbox-content-duplicate").is(":focus")) {
+                $("#toolbox-content-duplicate-other").toggle($("#toolbox-content-duplicate").val() === "other");
+                contentValue = $("#toolbox-content-duplicate").val();
+                // Sync with original dropdown
+                $("#toolbox-content").val(contentValue);
+                $("#toolbox-content-other").toggle(contentValue === "other");
             } else {
-                o.set('text', editor._get_text_sample($("#toolbox-content").val()));
+                $("#toolbox-content-other").toggle($("#toolbox-content").val() === "other");
+                contentValue = $("#toolbox-content").val();
+                // Sync with duplicate dropdown
+                $("#toolbox-content-duplicate").val(contentValue);
+                $("#toolbox-content-duplicate-other").toggle(contentValue === "other");
+            }
+            
+            o.content = contentValue;
+            if (contentValue === "other") {
+                var textValue;
+                if ($("#toolbox-content-duplicate-other").is(":focus")) {
+                    textValue = $("#toolbox-content-duplicate-other").val();
+                    $("#toolbox-content-other").val(textValue);
+                } else {
+                    textValue = $("#toolbox-content-other").val();
+                    $("#toolbox-content-duplicate-other").val(textValue);
+                }
+                o.set('text', textValue);
+            } else {
+                o.set('text', editor._get_text_sample(contentValue));
             }
         }
 

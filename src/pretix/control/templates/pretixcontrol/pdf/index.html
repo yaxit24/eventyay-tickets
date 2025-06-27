@@ -357,7 +357,7 @@
                     </div>
                     <div class="row control-group text">
                         <div class="col-sm-12">
-                            <label>{% trans "Text content" %}</label><br>
+                            <label>{% trans "Event info" %}</label><br>
                             <select class="input-block-level form-control" id="toolbox-content">
                                 {% for varname, var in variables.items %}
                                     <option data-sample="{{ var.editor_sample }}" value="{{ varname }}">{{ var.label }}</option>
@@ -376,6 +376,31 @@
                             </select>
                             <textarea type="text" value="" class="input-block-level form-control"
                                     id="toolbox-content-other"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Duplicate Text Content Dropdown -->
+                    <div class="row control-group text">
+                        <div class="col-sm-12">
+                            <label>{% trans "User info" %}</label><br>
+                            <select class="input-block-level form-control" id="toolbox-content-duplicate">
+                                {% for varname, var in variables.items %}
+                                    <option data-sample="{{ var.editor_sample }}" value="{{ varname }}">{{ var.label }}</option>
+                                {% endfor %}
+                                {% for p in request.organizer.meta_properties.all %}
+                                    <option value="meta:{{ p.name }}">
+                                        {% trans "Event attribute:" %} {{ p.name }}
+                                    </option>
+                                {% endfor %}
+                                {% for p in request.event.item_meta_properties.all %}
+                                    <option value="itemmeta:{{ p.name }}">
+                                        {% trans "Item attribute:" %} {{ p.name }}
+                                    </option>
+                                {% endfor %}
+                                <option value="other">{% trans "Other…" %}</option>
+                            </select>
+                            <textarea type="text" value="" class="input-block-level form-control"
+                                    id="toolbox-content-duplicate-other"></textarea>
                         </div>
                     </div>
                 </div>
