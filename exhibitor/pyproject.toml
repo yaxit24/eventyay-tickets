@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.entry-points."pretix.plugin"]
-exhibitors = "exhibitors:PretixPluginMeta"
+exhibitors = "exhibitors:ExhibitorApp"
 
 [project.entry-points."distutils.commands"]
 build = "pretix_plugin_build.build:CustomBuild"

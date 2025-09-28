@@ -1,4 +1,5 @@
 import os
+import random
 import secrets
 import string
 from django.db import models
@@ -12,9 +13,6 @@ def generate_key():
     return ''.join(secrets.choice(alphabet) for _ in range(8))
 
 def generate_booth_id():
-    import string
-    import random
-    
     # Generate a random booth_id if none exists
     characters = string.ascii_letters + string.digits
     while True:
@@ -27,7 +25,7 @@ def exhibitor_logo_path(instance, filename):
     return os.path.join('exhibitors', 'logos', instance.name, filename)
 
 class ExhibitorSettings(models.Model):
-    event = models.ForeignKey('pretixbase.Event', on_delete=models.CASCADE)
+    event = models.ForeignKey('pretixbase.Event', on_delete=models.CASCADE, unique=True)
     exhibitors_access_mail_subject = models.CharField(max_length=255)
     exhibitors_access_mail_body = models.TextField()
     allowed_fields = models.JSONField(default=list)
@@ -37,9 +35,6 @@ class ExhibitorSettings(models.Model):
         """Return all allowed fields, including required default fields"""
         default_fields = ['attendee_name', 'attendee_email']
         return list(set(default_fields + self.allowed_fields))
-
-    class Meta:
-        unique_together = ('event',)
 
 class ExhibitorInfo(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)

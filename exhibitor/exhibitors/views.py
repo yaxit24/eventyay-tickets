@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -14,7 +15,7 @@ from pretix.control.views.event import (
 from pretix.helpers.models import modelcopy
 
 from .forms import ExhibitorInfoForm
-from .models import ExhibitorInfo, ExhibitorSettings
+from .models import ExhibitorInfo, ExhibitorSettings, generate_booth_id
 
 
 class SettingsView(EventPermissionRequiredMixin, ListView):
@@ -32,16 +33,21 @@ class SettingsView(EventPermissionRequiredMixin, ListView):
 
     def post(self, request, *args, **kwargs):
         settings, _ = ExhibitorSettings.objects.get_or_create(event=self.request.event)
-        
+
+        # Define whitelist of supported field names
+        supported_fields = ['attendee_name', 'attendee_email', 'company', 'attendee_city', 'attendee_country']
+
         # Get selected fields, excluding default fields
         allowed_fields = request.POST.getlist('exhibitors_access_voucher')
-        
+        # Validate allowed_fields against whitelist
+        allowed_fields = [field for field in allowed_fields if field in supported_fields]
+
         # Update settings
         settings.allowed_fields = allowed_fields
         settings.exhibitors_access_mail_subject = request.POST.get('exhibitors_access_mail_subject', '')
         settings.exhibitors_access_mail_body = request.POST.get('exhibitors_access_mail_body', '')
         settings.save()
-        
+
         messages.success(request, _('Settings have been saved.'))
         return redirect(request.path)
 
@@ -103,7 +109,8 @@ class ExhibitorEditView(EventPermissionRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         exhibitor = form.save(commit=False)
-        exhibitor.lead_scanning_enabled = self.request.POST.get('lead_scanning_enabled') == 'on'
+        # Use form.cleaned_data instead of direct POST access for boolean field
+        exhibitor.lead_scanning_enabled = form.cleaned_data.get('lead_scanning_enabled', False)
         
         # generate booth_id if none provided and there isn't an existing one
         if not form.cleaned_data.get('booth_id') and not exhibitor.booth_id:
@@ -141,7 +148,10 @@ class ExhibitorCopyKeyView(EventPermissionRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         exhibitor = get_object_or_404(ExhibitorInfo, pk=kwargs['pk'])
-        response = HttpResponse(exhibitor.key)
+        # Use Django's escape function to prevent XSS
+        from django.utils.html import escape
+        safe_key = escape(exhibitor.key)
+        response = HttpResponse(safe_key, content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename="password.txt"'
         )

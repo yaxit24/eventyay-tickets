@@ -77,16 +77,19 @@ class LeadCreateView(views.APIView):
     def get_allowed_attendee_data(self, order_position, settings, exhibitor):
         """Helper method to get allowed attendee data based on settings"""
         # Get all allowed fields including defaults
-        allowed_fields = settings.all_allowed_fields
+        allowed_fields = set(settings.all_allowed_fields)
         attendee_data = {
             'name': order_position.attendee_name,  # Always included
             'email': order_position.attendee_email,  # Always included
-            'company': order_position.company, # Always included
             'city': order_position.city if 'attendee_city' in allowed_fields else None,
             'country': str(order_position.country) if 'attendee_country' in allowed_fields else None,
             'note': '',
             'tags': []
         }
+        
+        # Only include company if it's in allowed_fields
+        if 'company' in allowed_fields:
+            attendee_data['company'] = order_position.company
 
         return {k: v for k, v in attendee_data.items() if v is not None}
 
@@ -132,10 +135,16 @@ class LeadCreateView(views.APIView):
             )
 
         # Check for duplicate scan
-        if Lead.objects.filter(
-            exhibitor=exhibitor,
-            pseudonymization_id=pseudonymization_id
-        ).exists():
+        duplicate_filter = {
+            'exhibitor': exhibitor,
+            'pseudonymization_id': pseudonymization_id
+        }
+        
+        # If lead scanning is scoped by device, include device_name in duplicate check
+        if exhibitor.lead_scanning_scope_by_device:
+            duplicate_filter['device_name'] = device_name
+            
+        if Lead.objects.filter(**duplicate_filter).exists():
             attendee_data = self.get_allowed_attendee_data(
                 order_position,
                 settings,
@@ -276,7 +285,10 @@ class LeadUpdateView(views.APIView):
                     exhibitor=exhibitor,
                     name=tag_name
                 )
-                if not created:
+                if created:
+                    tag.use_count = 1
+                    tag.save()
+                else:
                     tag.use_count += 1
                     tag.save()
 
