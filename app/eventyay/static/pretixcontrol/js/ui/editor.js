@@ -5,7 +5,7 @@ fabric.Poweredby = fabric.util.createClass(fabric.Image, {
     initialize: function (options) {
         options || (options = {});
 
-        var el = $("#poweredby-" + options.content).get(0)
+        let el = $("#poweredby-" + options.content).get(0)
         this.callSuper('initialize', el, options);
         this.set('label', options.label || '');
     },
