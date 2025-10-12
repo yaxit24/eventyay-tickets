@@ -49,14 +49,15 @@
                 </div>
                 <div class="panel-body">
                     <div id="editor-canvas-area">
-                        <canvas id="pdf-canvas"
-                                data-pdf-url="{{ pdf }}"
-                                data-worker-url="{% static "pdfjs/pdf.worker.js" %}">
-
-                        </canvas>
-                        <div id="fabric-container">
-                            <canvas id="fabric-canvas">
+                        <div id="editor-canvas-wrapper">
+                            <canvas id="pdf-canvas"
+                                    data-pdf-url="{{ pdf }}"
+                                    data-worker-url="{% static "pdfjs/pdf.worker.js" %}">
                             </canvas>
+                            <div id="fabric-container">
+                                <canvas id="fabric-canvas">
+                                </canvas>
+                            </div>
                         </div>
                         <div id="source-container">
                             <div class="alert alert-warning">
